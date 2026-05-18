@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Class Thinking Lab</title>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<style>
+:root {
+  --bg:#070812; --panel:rgba(255,255,255,.08); --panel2:rgba(255,255,255,.13);
+  --text:#f7f1ea; --muted:#aaa2bd; --line:rgba(255,255,255,.16);
+  --glow:#9d7cff; --glow2:#5ee7df; --warm:#ffd08a; --danger:#ff8f98;
+}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:radial-gradient(circle at top left,rgba(157,124,255,.28),transparent 34%),radial-gradient(circle at bottom right,rgba(94,231,223,.18),transparent 38%),var(--bg);color:var(--text);font-family:Arial,sans-serif}
+.wrap{width:min(1160px,92vw);margin:0 auto;padding:28px 0 70px}
+header{display:flex;justify-content:space-between;align-items:center;gap:18px;margin-bottom:24px}
+.brand h1{margin:0;font-family:Georgia,serif;font-size:clamp(2rem,5vw,4.4rem);font-weight:400;letter-spacing:-.055em;line-height:.95}
+.brand p{margin:8px 0 0;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;font-size:.78rem;font-weight:800}
+.nav{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+button,.btn{border:1px solid var(--line);background:rgba(255,255,255,.09);color:var(--text);border-radius:18px;padding:14px 18px;cursor:pointer;letter-spacing:.06em;text-transform:uppercase;font-size:.8rem;font-weight:850;min-height:50px;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;text-align:center}
+button.primary,.btn.primary{border:0;background:linear-gradient(135deg,var(--glow),var(--glow2));color:#080912}
+button:hover{transform:translateY(-1px)}button:disabled{opacity:.55;cursor:wait;transform:none}
+.card,.stage{background:linear-gradient(180deg,rgba(255,255,255,.105),rgba(255,255,255,.045));border:1px solid var(--line);border-radius:28px;box-shadow:0 30px 80px rgba(0,0,0,.35);padding:clamp(22px,4vw,42px);backdrop-filter:blur(18px);margin-bottom:18px}
+.hidden{display:none!important}.grid{display:grid;gap:16px}.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+label,.label{display:block;color:var(--muted);letter-spacing:.09em;text-transform:uppercase;font-size:.72rem;font-weight:850;margin:0 0 8px}
+input,textarea,select{width:100%;border:1px solid var(--line);border-radius:18px;background:rgba(255,255,255,.11);color:var(--text);padding:16px;font-size:1.05rem;font-family:Arial,sans-serif;outline:none}
+textarea{min-height:180px;line-height:1.6;resize:vertical;background:rgba(255,255,255,.2)}
+textarea::placeholder,input::placeholder{color:rgba(255,255,255,.6)}
+.row,.control-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(185px,1fr));gap:12px;margin-top:16px}
+.status{min-height:24px;color:var(--warm);font-size:.92rem;font-weight:750;margin-top:12px;line-height:1.45}.error{color:var(--danger)}
+.mini{font-size:.82rem;color:var(--muted);line-height:1.5;margin:8px 0 0}
+.pair-display{text-align:center;padding:clamp(30px,5vw,52px) 18px;border-radius:26px;background:radial-gradient(circle at 50% 0%,rgba(157,124,255,.24),transparent 55%),rgba(255,255,255,.055);border:1px solid var(--line);margin:18px 0}
+.mode-label,.kicker{color:var(--warm);font-size:.74rem;font-weight:900;letter-spacing:.14em;text-transform:uppercase;margin-bottom:15px}
+.nouns{font-family:Georgia,serif;font-size:clamp(3rem,9vw,7rem);line-height:.9;letter-spacing:-.065em}.amp{color:var(--glow2);font-style:italic;opacity:.86;padding:0 .18em}
+.subtle{color:var(--muted);line-height:1.6;max-width:760px;margin:16px auto 0;font-size:1rem}
+.panel{padding:22px;border-radius:24px;background:rgba(255,255,255,.075);border:1px solid var(--line);margin-top:18px}.panel h2{margin:0 0 8px;font-family:Georgia,serif;font-weight:400;font-size:clamp(1.5rem,3vw,2.25rem);letter-spacing:-.03em}
+.qr-panel{display:grid;grid-template-columns:minmax(0,1fr) 210px;gap:20px;align-items:center}.qr-box{min-height:210px;display:grid;place-items:center;border-radius:22px;background:#fff;padding:14px}.qr-box canvas,.qr-box img{width:180px!important;height:180px!important}.join-code{margin:14px 0;padding:14px 16px;border-radius:16px;background:rgba(255,208,138,.11);color:var(--warm);font-weight:900;letter-spacing:.08em}
+.round-panel{background:rgba(94,231,223,.08);border-color:rgba(94,231,223,.25)}.round-badge{display:inline-flex;padding:7px 12px;border-radius:999px;background:linear-gradient(135deg,var(--glow),var(--glow2));color:#080912;font-size:.76rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px}
+.thread,.responses,.pair-bank,.contribution-bank,.gallery{margin-top:20px;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+.response-card,.thread-card,.pair-tile,.contribution-card,.display-card{padding:16px;border-radius:20px;background:rgba(255,255,255,.075);border:1px solid var(--line);text-align:left}
+.response-card.approved,.contribution-card.selected{background:rgba(94,231,223,.11);border-color:rgba(94,231,223,.5)}
+.response-card strong,.thread-card strong,.pair-tile strong,.contribution-card strong{color:var(--warm);font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;display:block;margin-bottom:7px}
+.response-card p,.thread-card p,.pair-tile p,.contribution-card p{margin:0;line-height:1.55;color:#eee8ff;white-space:pre-wrap}
+.name-pill,.chip{display:inline-flex;margin-left:8px;padding:3px 8px;border-radius:999px;background:rgba(255,255,255,.08);color:var(--muted);font-size:.65rem;text-transform:uppercase;letter-spacing:.06em}
+.published,.summary{margin-top:24px;padding:clamp(24px,4vw,42px);border-radius:30px;background:radial-gradient(circle at 15% 0%,rgba(157,124,255,.16),transparent 38%),rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);text-align:left;white-space:pre-wrap;line-height:1.6}
+.published-title{font-family:Georgia,serif;font-size:clamp(2.4rem,7vw,5.6rem);line-height:.9;letter-spacing:-.07em;margin-bottom:14px;white-space:normal}
+.display-stage{min-height:calc(100vh - 80px);border-radius:34px;padding:clamp(26px,5vw,56px);background:radial-gradient(circle at 10% 0%,rgba(157,124,255,.24),transparent 36%),radial-gradient(circle at 90% 10%,rgba(94,231,223,.18),transparent 32%),rgba(255,255,255,.055);border:1px solid var(--line);box-shadow:0 30px 90px rgba(0,0,0,.34)}
+.display-top{display:flex;justify-content:space-between;gap:20px;align-items:flex-start;margin-bottom:28px}.display-top h1{margin:0;font-family:Georgia,serif;font-size:clamp(3rem,9vw,8rem);line-height:.82;letter-spacing:-.08em}.display-top h1 em{color:var(--glow2);font-style:italic;padding:0 .16em}
+.display-code{padding:14px 18px;border-radius:999px;background:rgba(255,208,138,.12);color:var(--warm);font-weight:900;letter-spacing:.1em;white-space:nowrap}
+.spotlight{min-height:430px;display:grid;place-items:center;padding:clamp(24px,5vw,60px);border-radius:34px;background:radial-gradient(circle at 50% 0%,rgba(255,208,138,.16),transparent 50%),rgba(255,255,255,.08);border:1px solid var(--line)}.spotlight p{font-family:Georgia,serif;font-size:clamp(2rem,5vw,5rem);line-height:1.08;margin:0;color:#fff8ef}.spotlight strong{display:inline-flex;margin-top:24px;padding:8px 14px;border-radius:999px;background:rgba(255,208,138,.12);color:var(--warm);letter-spacing:.08em;text-transform:uppercase}
+
+/* ── Print / Save as PDF ───────────────────────────────────────── */
+#printHeader{display:none}
+@media print{
+  body{background:#fff!important;color:#111!important;font-size:11pt}
+  header,.nav,.round-panel,#studentThread,#soloThread,
+  .pair-bank,.qr-panel,.control-grid,
+  #revisionInstruction,.row,button,.status,.mini{display:none!important}
+  .wrap{width:100%;padding:10px}
+  .card,.stage,.display-stage{box-shadow:none;background:#fff!important;border:none;border-radius:0;padding:0;backdrop-filter:none}
+  .pair-display{background:#f5f5f5!important;border:1px solid #ccc;border-radius:8px;padding:16px;margin:10px 0}
+  .nouns{font-size:2.2rem;color:#111}.amp{color:#555}.mode-label{color:#555}
+  .panel{background:#fff!important;border:1px solid #ddd;border-radius:6px;padding:14px;margin-top:10px}
+  .panel h2{font-size:1.2rem;color:#111}
+  .responses{display:block!important}
+  .response-card{background:#f9f9f9!important;border:1px solid #ddd!important;border-radius:6px;padding:12px;margin-bottom:10px;page-break-inside:avoid;color:#111!important}
+  .response-card strong{color:#333!important}.response-card p{color:#111!important}
+  .name-pill{background:#eee!important;color:#555!important}
+  .published,.summary{background:#f5f5f5!important;border:1px solid #ccc;border-radius:6px;padding:16px;color:#111!important;white-space:pre-wrap}
+  #printHeader{display:block!important;border-bottom:2px solid #333;padding-bottom:10px;margin-bottom:16px}
+  #printHeader h2{margin:0 0 4px;font-size:1.4rem;font-family:Georgia,serif}
+  #printHeader p{margin:0;color:#555;font-size:.85rem}
+  .hidden{display:none!important}
+  /* always show poem + summary when printing */
+  #classPoem,#summary{display:block!important}
+}
+
+@media(max-width:760px){header,.two,.qr-panel,.display-top{grid-template-columns:1fr;display:grid}.nav{justify-content:stretch}.qr-box{width:fit-content;margin:0 auto}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- Shown only when printing -->
+<div id="printHeader">
+  <h2 id="printTitle">Class Thinking Lab</h2>
+  <p id="printMeta"></p>
+</div>
+
+<header>
+  <div class="brand"><h1>Class Thinking Lab</h1><p>AI supported thinking, poetry, and class synthesis</p></div>
+  <div class="nav">
+    <button id="studentTab" class="primary" onclick="setView('student')">Student</button>
+    <button id="soloTab" onclick="setView('solo')">Solo</button>
+    <button id="displayTab" onclick="setView('display')">Class Display</button>
+    <button id="teacherTab" onclick="teacherLogin()">Teacher</button>
+  </div>
+</header>
+
+<section id="studentView" class="card">
+  <div class="pair-display">
+    <div class="mode-label" id="studentMode">Session</div>
+    <div class="nouns"><span id="studentNoun1">Candle</span><span class="amp">&</span><span id="studentNoun2">Whisper</span></div>
+    <p class="subtle" id="studentPrompt">Join your teacher's session, write three rounds, and let the thinking coach help you go deeper.</p>
+  </div>
+  <div class="panel round-panel">
+    <div class="round-badge">Round <span id="roundNum">1</span> of 3</div>
+    <p id="coachText">Start with one clear connection. What do these two ideas share?</p>
+  </div>
+  <div id="studentThread" class="thread"></div>
+  <div class="panel">
+    <div class="grid two">
+      <div><label>Your Name</label><input id="studentName" placeholder="First name or initials"></div>
+      <div><label>Session Code</label><input id="studentCode" value="TODAY"></div>
+    </div>
+    <label id="studentRoundLabel">Round 1 of 3</label>
+    <textarea id="studentText" placeholder="Write your first idea..."></textarea>
+    <div class="row">
+      <button class="primary" onclick="studentNudge()">Get AI Coach Nudge</button>
+      <button class="primary" onclick="submitRound()">Submit This Round</button>
+      <button onclick="joinSession()">Refresh Session Prompt</button>
+    </div>
+    <div class="status" id="studentStatus"></div>
+  </div>
+</section>
+
+<section id="soloView" class="card hidden">
+  <div class="pair-display">
+    <div class="mode-label">Solo Mode</div>
+    <div class="nouns"><span id="soloNoun1">Candle</span><span class="amp">&</span><span id="soloNoun2">Whisper</span></div>
+    <p class="subtle">Use this without a class session. Write three rounds, get AI nudges, and create a solo poem.</p>
+  </div>
+  <div class="row"><button class="primary" onclick="generateSoloPair()">Generate Solo Pair</button><button onclick="copySolo()">Copy Solo Work</button><button onclick="print()">Print Solo</button></div>
+  <div class="panel round-panel"><div class="round-badge">Solo Round <span id="soloRoundNum">1</span> of 3</div><p id="soloCoachText">Start with one connection.</p></div>
+  <div id="soloThread" class="thread"></div>
+  <div class="panel">
+    <label id="soloRoundLabel">Round 1 of 3</label>
+    <textarea id="soloText" placeholder="Write your solo idea..."></textarea>
+    <div class="row"><button class="primary" onclick="soloNudge()">Get AI Coach Nudge</button><button class="primary" onclick="submitSoloRound()">Submit Solo Round</button></div>
+    <div class="status" id="soloStatus"></div>
+  </div>
+  <div id="soloPoem" class="published hidden"></div>
+</section>
+
+<section id="classDisplayView" class="display-stage hidden">
+  <div class="display-top">
+    <div><div class="kicker">Class Display</div><h1><span id="displayNoun1">Candle</span><em>&</em><span id="displayNoun2">Whisper</span></h1><p class="subtle" id="displayPrompt">Watch the class thinking grow.</p></div>
+    <div class="display-code">JOIN <strong id="displayCode">TODAY</strong></div>
+  </div>
+  <div id="displayGallery" class="gallery"></div>
+  <div id="displaySpotlight" class="spotlight hidden"></div>
+  <div id="displayPoem" class="published hidden"></div>
+  <div id="displaySummary" class="summary hidden"></div>
+  <div class="mini" id="displayCount">0 ideas collected</div>
+</section>
+
+<section id="teacherView" class="card hidden">
+  <div class="grid two">
+    <div><label>Session Code</label><input id="teacherCode" value="TODAY" oninput="makeJoinLink()"></div>
+    <div><label>Category</label><select id="category" onchange="renderPairBank()"></select></div>
+  </div>
+  <div class="panel">
+    <h2>Noun Pair Bank</h2>
+    <p class="mini">Choose a pair or create your own.</p>
+    <div class="grid two"><div><label>Search</label><input id="pairSearch" oninput="renderPairBank()" placeholder="Search pairs..."></div><div><label>Mode</label><select id="mode"><option>Upper Elementary</option><option>Advanced</option></select></div></div>
+    <div id="pairBank" class="pair-bank"></div>
+    <div class="grid two" style="margin-top:16px">
+      <div><label>Custom Noun 1</label><input id="custom1" placeholder="Lantern"></div>
+      <div><label>Custom Noun 2</label><input id="custom2" placeholder="Memory"></div>
+      <div><label>Theme</label><input id="customTheme" placeholder="hope, memory, change"></div>
+      <div><label>&nbsp;</label><button class="primary" onclick="useCustomPair()">Use Custom Pair</button></div>
+    </div>
+  </div>
+  <div class="pair-display">
+    <div class="mode-label" id="teacherTheme">quiet signals</div>
+    <div class="nouns"><span id="teacherNoun1">Candle</span><span class="amp">&</span><span id="teacherNoun2">Whisper</span></div>
+    <p class="subtle">Teacher control room.</p>
+  </div>
+  <div class="panel">
+    <h2>Prompt and Session</h2>
+    <label>Prompt</label><textarea id="teacherPrompt">What hidden connection can you find between these two ideas?</textarea>
+    <div class="row"><button class="primary" onclick="startSession()">Start or Update Session</button><button onclick="clearResponses()">Clear Responses</button></div>
+    <div class="status" id="teacherStatus"></div>
+  </div>
+  <div class="panel qr-panel">
+    <div><h2>Student Join Link</h2><div class="join-code">JOIN CODE: <strong id="joinCode">TODAY</strong></div><input id="joinLink" readonly><div class="row"><button class="primary" onclick="makeJoinLink()">Refresh QR</button><button onclick="copyJoinLink()">Copy Link</button></div></div>
+    <div class="qr-box"><canvas id="qrCanvas"></canvas><img id="qrImage" style="display:none" alt="QR"></div>
+  </div>
+  <div class="panel">
+    <h2>Live Display Controls</h2>
+    <div class="control-grid"><button class="primary" onclick="setDisplayMode('gallery')">Gallery</button><button onclick="setDisplayMode('spotlight')">Spotlight</button><button onclick="setDisplayMode('poem')">Poem</button><button onclick="setDisplayMode('summary')">Summary</button><button onclick="toggleDisplayNames()">Toggle Names</button><button class="primary" onclick="setView('display')">Open Class Display</button></div>
+  </div>
+  <div class="panel">
+    <h2>Teacher Actions</h2>
+    <div class="row">
+      <button class="primary" onclick="loadResponses()">Refresh Responses</button>
+      <button onclick="approveAll()">Approve All</button>
+      <button class="primary" onclick="createClassPoem()">Create Class Poem</button>
+      <button onclick="createSummary()">AI Summary</button>
+      <button onclick="exportReport()">Export .txt</button>
+      <button class="primary" onclick="printReport()">🖨 Print / Save PDF</button>
+    </div>
+  </div>
+  <div id="responses" class="responses"></div>
+  <div id="classPoem" class="published hidden"></div>
+  <div class="panel">
+    <h2>AI Poem Revision Chat</h2>
+    <p class="mini">Ask AI to revise the class poem while keeping student thoughts intact.</p>
+    <textarea id="revisionInstruction" placeholder="Make it simpler, make it rhyme, make it more lyrical, turn it into a song..."></textarea>
+    <div class="row"><button class="primary" onclick="revisePoem()">Revise with AI</button><button onclick="quickRevise('simpler')">Simpler</button><button onclick="quickRevise('rhyme')">Rhyme</button><button onclick="quickRevise('lyrical')">Lyrical</button><button onclick="quickRevise('song')">Song</button></div>
+  </div>
+  <div id="summary" class="summary hidden"></div>
+</section>
+</div>
+
+<script>
+const TEACHER_PASSWORD = "teach123";
+const banks = {
+ "Upper Elementary":[["Candle","Whisper","quiet signals"],["Window","Question","looking closer"],["Seed","Secret","hidden growth"],["Bridge","Promise","connection"],["Kite","Dream","hope and risk"],["Rain","Footsteps","change"],["Key","Memory","past"],["Shadow","Echo","what follows"],["Map","Story","meaning"],["Lantern","Idea","discovery"]],
+ "Feelings & Identity":[["Mask","Mirror","identity"],["Name","Doorway","belonging"],["Shadow","Courage","bravery"],["Anchor","Worry","weight"],["Spark","Confidence","inner force"],["Storm","Patience","self-control"]],
+ "Nature & Change":[["River","Rumor","movement"],["Root","Memory","what stays"],["Leaf","Goodbye","change"],["Fog","Uncertainty","not knowing"],["Mountain","Goal","challenge"],["Tide","Habit","patterns"]],
+ "School & Thinking":[["Pencil","Possibility","starting"],["Eraser","Forgiveness","revision"],["Clock","Pressure","time"],["Question","Compass","direction"],["Mistake","Map","learning"],["Puzzle","Argument","pieces"]],
+ "Advanced":[["Silence","Gravity","invisible force"],["Language","Currency","value"],["Map","Lie","distortion"],["Archive","Scar","memory"],["Clock","Cage","limits"],["Threshold","Grief","crossing"],["Ritual","Algorithm","patterns"],["Signal","Belief","meaning"]]
+};
+
+let current = {code:"TODAY",noun1:"Candle",noun2:"Whisper",category:"quiet signals",prompt:"What hidden connection can you find between these two ideas?",responses:[],displayMode:"gallery",displayNames:true,classPoem:"",summary:""};
+let studentRounds=[], soloRounds=[], soloPair={noun1:"Candle",noun2:"Whisper"};
+let timer=null, spotlightIndex=0;
+
+function el(id){return document.getElementById(id)}
+function clean(code){return String(code||"TODAY").trim().toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,16)||"TODAY"}
+function viewIds(){return ["studentView","soloView","teacherView","classDisplayView"]}
+function setView(view){viewIds().forEach(id=>el(id).classList.add("hidden")); el(view+"View")?.classList.remove("hidden"); ["student","solo","teacher","display"].forEach(v=>el(v+"Tab")?.classList.toggle("primary",v===view)); if(view==="display") renderDisplay(); if(view==="teacher") startTimer();}
+function teacherLogin(){const p=prompt("Teacher password:"); if(p===TEACHER_PASSWORD){setView("teacher"); loadResponses()} else if(p!==null) alert("Incorrect password")}
+async function api(path, opts={}){const r=await fetch(path,{headers:{"Content-Type":"application/json"},...opts}); const d=await r.json().catch(()=>({})); if(!r.ok) throw new Error(d.error||"Request failed"); return d}
+
+function init(){el("category").innerHTML=Object.keys(banks).map(c=>`<option>${esc(c)}</option>`).join(""); renderPairBank(); makeJoinLink(); applyUrl(); updateStudentUI(); generateSoloPair(); startTimer(); health()}
+async function health(){try{const d=await api("/api/health"); if(!d.ai) el("teacherStatus").textContent="⚠️ OpenAI key missing — add OPENAI_API_KEY in Render → Environment Variables."}catch{}}
+function applyUrl(){const u=new URLSearchParams(location.search); if(u.get("code")){el("studentCode").value=u.get("code"); el("teacherCode").value=u.get("code")} if(u.get("view")==="student") setView("student"); joinSession()}
+function renderPairBank(){const cat=el("category").value||"Upper Elementary";const q=(el("pairSearch").value||"").toLowerCase(); const list=(banks[cat]||[]).filter(p=>p.join(" ").toLowerCase().includes(q)); el("pairBank").innerHTML=list.map(p=>`<button class="pair-tile" onclick="usePair('${js(p[0])}','${js(p[1])}','${js(p[2])}')" ><strong>${esc(p[0])} & ${esc(p[1])}</strong><p>${esc(p[2])}</p></button>`).join("")}
+function usePair(a,b,c){current.noun1=a;current.noun2=b;current.category=c;renderTeacherPair()}
+function useCustomPair(){const a=el("custom1").value.trim(),b=el("custom2").value.trim(),c=el("customTheme").value.trim()||"custom"; if(!a||!b)return status("teacherStatus","Add both custom nouns."); usePair(a,b,c)}
+function renderTeacherPair(){el("teacherNoun1").textContent=current.noun1;el("teacherNoun2").textContent=current.noun2;el("teacherTheme").textContent=current.category;makeJoinLink()}
+async function startSession(){current.code=clean(el("teacherCode").value);current.prompt=el("teacherPrompt").value.trim(); const d=await api("/api/session/start",{method:"POST",body:JSON.stringify(current)}); current=d.session; status("teacherStatus","Session "+current.code+" is live."); renderAll(); makeJoinLink()}
+async function joinSession(){const code=clean(el("studentCode").value); try{const d=await api("/api/session/"+code); current=d.session; renderStudentPair(); status("studentStatus","Joined "+code+". Write round 1.")}catch(e){status("studentStatus",e.message,true)}}
+function renderStudentPair(){el("studentNoun1").textContent=current.noun1;el("studentNoun2").textContent=current.noun2;el("studentMode").textContent=current.category||current.mode;el("studentPrompt").textContent=current.prompt;el("displayNoun1").textContent=current.noun1;el("displayNoun2").textContent=current.noun2;el("displayCode").textContent=current.code}
+function makeJoinLink(){const code=clean(el("teacherCode")?.value||current.code); const url=location.origin+location.pathname+"?code="+encodeURIComponent(code)+"&view=student"; el("joinLink").value=url; el("joinCode").textContent=code; if(window.QRCode) QRCode.toCanvas(el("qrCanvas"),url,{width:180,margin:1},err=>{if(err)qrFallback(url)}); else qrFallback(url)}
+function qrFallback(url){el("qrCanvas").style.display="none";el("qrImage").style.display="block";el("qrImage").src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data="+encodeURIComponent(url)}
+function copyJoinLink(){navigator.clipboard.writeText(el("joinLink").value);status("teacherStatus","Join link copied.")}
+
+async function studentNudge(){const text=el("studentText").value.trim(); if(!text)return status("studentStatus","Write a thought first."); try{const d=await api("/api/ai/coach",{method:"POST",body:JSON.stringify({text,round:studentRounds.length+1,noun1:current.noun1,noun2:current.noun2,previousResponses:studentRounds})}); status("studentStatus",d.reply)}catch(e){status("studentStatus",e.message,true)}}
+async function submitRound(){if(!current.code) await joinSession(); const text=el("studentText").value.trim(), name=el("studentName").value.trim(); if(!name||!text)return status("studentStatus","Add your name and response."); studentRounds.push(text); el("studentText").value=""; if(studentRounds.length<3){updateStudentUI(); return status("studentStatus","Round "+studentRounds.length+" saved. Keep going.")} try{const d=await api("/api/session/"+clean(el("studentCode").value)+"/submit",{method:"POST",body:JSON.stringify({name,rounds:studentRounds})}); studentRounds=[]; updateStudentUI(); status("studentStatus","Finished! Your poem was sent to the teacher.");}catch(e){status("studentStatus",e.message,true)}}
+function updateStudentUI(){const r=Math.min(studentRounds.length+1,3); el("roundNum").textContent=r; el("studentRoundLabel").textContent="Round "+r+" of 3"; el("studentThread").innerHTML=studentRounds.map((x,i)=>`<div class="thread-card"><strong>Saved Round ${i+1}</strong><p>${esc(x)}</p></div>`).join("")}
+
+function generateSoloPair(){const p=banks["Upper Elementary"][Math.floor(Math.random()*banks["Upper Elementary"].length)]; soloPair={noun1:p[0],noun2:p[1],category:p[2]}; el("soloNoun1").textContent=p[0];el("soloNoun2").textContent=p[1]; soloRounds=[]; updateSolo()}
+async function soloNudge(){const text=el("soloText").value.trim(); if(!text)return status("soloStatus","Write a thought first."); try{const d=await api("/api/ai/coach",{method:"POST",body:JSON.stringify({text,round:soloRounds.length+1,noun1:soloPair.noun1,noun2:soloPair.noun2,previousResponses:soloRounds})}); status("soloStatus",d.reply)}catch(e){status("soloStatus",e.message,true)}}
+async function submitSoloRound(){const text=el("soloText").value.trim(); if(!text)return status("soloStatus","Write first."); soloRounds.push(text); el("soloText").value=""; if(soloRounds.length<3){updateSolo();return status("soloStatus","Round "+soloRounds.length+" saved.")} try{const d=await api("/api/ai/coach",{method:"POST",body:JSON.stringify({text:soloRounds.join("\n"),round:3,noun1:soloPair.noun1,noun2:soloPair.noun2,previousResponses:soloRounds})}); el("soloPoem").textContent=d.reply; el("soloPoem").classList.remove("hidden");}catch(e){el("soloPoem").textContent=soloRounds.join("\n\n");el("soloPoem").classList.remove("hidden")} soloRounds=[]; updateSolo()}
+function updateSolo(){const r=Math.min(soloRounds.length+1,3); el("soloRoundNum").textContent=r;el("soloRoundLabel").textContent="Round "+r+" of 3";el("soloThread").innerHTML=soloRounds.map((x,i)=>`<div class="thread-card"><strong>Saved Solo Round ${i+1}</strong><p>${esc(x)}</p></div>`).join("")}
+function copySolo(){navigator.clipboard.writeText(el("soloPoem").innerText||soloRounds.join("\n\n"));status("soloStatus","Copied.")}
+
+async function loadResponses(){try{const d=await api("/api/session/"+clean(el("teacherCode").value)); current=d.session; renderAll()}catch(e){status("teacherStatus",e.message,true)}}
+function renderAll(){renderTeacherPair();renderStudentPair();renderResponses();renderDisplay(); if(current.classPoem){el("classPoem").textContent=current.classPoem;el("classPoem").classList.remove("hidden")} if(current.summary){el("summary").textContent=current.summary;el("summary").classList.remove("hidden")}}
+function renderResponses(){const list=current.responses||[]; el("responses").innerHTML=list.map((r,i)=>`<div class="response-card ${r.approved?'approved':''}"><strong>${esc(displayName(r.name,i))}<span class="name-pill">${r.approved?'approved':'pending'}</span></strong><p>${esc(r.responseText)}</p><p><b>Thinking:</b> ${esc(r.thinking||"")}</p><p><b>Influence:</b> ${esc(r.influence||"")}</p><div class="published">${esc(r.poem||"")}</div><div class="row"><button onclick="approve('${r.id}',${!r.approved})">${r.approved?'Hide':'Approve'}</button></div></div>`).join("")}
+function displayName(name,i){return current.displayNames?name:"Student "+(i+1)}
+async function approve(id,approved){await api("/api/session/"+current.code+"/approve",{method:"POST",body:JSON.stringify({id,approved})});loadResponses()}
+async function approveAll(){for(const r of current.responses||[]) await api("/api/session/"+current.code+"/approve",{method:"POST",body:JSON.stringify({id:r.id,approved:true})}); loadResponses()}
+async function clearResponses(){if(confirm("Clear all responses?")){await api("/api/session/"+current.code+"/responses",{method:"DELETE"});loadResponses()}}
+async function createClassPoem(){try{const ids=(current.responses||[]).filter(r=>r.approved).map(r=>r.id);const d=await api("/api/ai/class-poem",{method:"POST",body:JSON.stringify({code:current.code,selectedIds:ids})}); current.classPoem=d.poem; el("classPoem").textContent=d.poem; el("classPoem").classList.remove("hidden"); renderDisplay()}catch(e){status("teacherStatus",e.message,true)}}
+async function createSummary(){try{const d=await api("/api/ai/summary",{method:"POST",body:JSON.stringify({code:current.code})}); current.summary=d.summary; el("summary").textContent=d.summary; el("summary").classList.remove("hidden"); renderDisplay()}catch(e){status("teacherStatus",e.message,true)}}
+async function revisePoem(){const instruction=el("revisionInstruction").value.trim(); if(!instruction)return status("teacherStatus","Write a revision request."); try{const d=await api("/api/ai/revise-poem",{method:"POST",body:JSON.stringify({code:current.code,poem:current.classPoem,instruction})}); current.classPoem=d.revised; el("classPoem").textContent=d.revised; el("classPoem").classList.remove("hidden"); renderDisplay()}catch(e){status("teacherStatus",e.message,true)}}
+function quickRevise(style){el("revisionInstruction").value="Make the class poem "+style+" while keeping student ideas."; revisePoem()}
+function setDisplayMode(mode){current.displayMode=mode; api("/api/session/"+current.code+"/display",{method:"POST",body:JSON.stringify({displayMode:mode})}).catch(()=>{}); renderDisplay()}
+function toggleDisplayNames(){current.displayNames=!current.displayNames; api("/api/session/"+current.code+"/display",{method:"POST",body:JSON.stringify({displayNames:current.displayNames})}).catch(()=>{}); renderAll()}
+function renderDisplay(){if(!el("classDisplayView"))return; renderStudentPair(); const mode=current.displayMode||"gallery"; ["displayGallery","displaySpotlight","displayPoem","displaySummary"].forEach(id=>el(id).classList.add("hidden")); el("displayCount").textContent=(current.responses||[]).length+" ideas collected"; if(mode==="gallery"){el("displayGallery").classList.remove("hidden");el("displayGallery").innerHTML=(current.responses||[]).slice(-12).reverse().map((r,i)=>`<div class="display-card"><p>${esc(shorten(r.responseText,220))}</p><strong>${esc(displayName(r.name,i))}</strong></div>`).join("")||"<div class='display-card'><p>Waiting for ideas...</p></div>"} if(mode==="spotlight"){const list=current.responses||[]; el("displaySpotlight").classList.remove("hidden"); const r=list[spotlightIndex++%Math.max(list.length,1)]; el("displaySpotlight").innerHTML=r?`<div><p>${esc(shorten(r.responseText,260))}</p><strong>${esc(displayName(r.name,0))}</strong></div>`:"<p>Waiting for a spotlight idea...</p>"} if(mode==="poem"){el("displayPoem").classList.remove("hidden");el("displayPoem").textContent=current.classPoem||"Create the class poem from the teacher dashboard."} if(mode==="summary"){el("displaySummary").classList.remove("hidden");el("displaySummary").textContent=current.summary||"Create the AI summary from the teacher dashboard."}}
+function startTimer(){if(timer)return; timer=setInterval(()=>{if(!el("teacherView").classList.contains("hidden")||!el("classDisplayView").classList.contains("hidden"))loadResponses()},4000)}
+
+// ── Export as .txt ─────────────────────────────────────────────────────────────
+function exportReport(){
+  const lines=[
+    "CLASS THINKING LAB — SESSION REPORT",
+    "Date: "+new Date().toLocaleDateString(),
+    "Pair: "+current.noun1+" & "+current.noun2,
+    "Session Code: "+current.code,
+    "",
+    "─".repeat(50),
+    "STUDENT RESPONSES",
+    "─".repeat(50),
+    ...(current.responses||[]).map((r,i)=>[
+      "",
+      (i+1)+". "+r.name,
+      r.responseText,
+      "",
+      "Thinking: "+(r.thinking||""),
+      "Influence: "+(r.influence||""),
+      "",
+      "Poem:",
+      r.poem||""
+    ].join("\n")),
+    "",
+    "─".repeat(50),
+    "SUMMARY",
+    "─".repeat(50),
+    current.summary||"(not yet generated)",
+    "",
+    "─".repeat(50),
+    "CLASS POEM",
+    "─".repeat(50),
+    current.classPoem||"(not yet generated)"
+  ];
+  const blob=new Blob([lines.join("\n")],{type:"text/plain"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  a.href=url; a.download="class-thinking-lab-"+current.code+"-"+new Date().toISOString().slice(0,10)+".txt";
+  a.click(); URL.revokeObjectURL(url);
+}
+
+// ── Print / Save as PDF ────────────────────────────────────────────────────────
+function printReport(){
+  el("printTitle").textContent="Class Thinking Lab — "+current.noun1+" & "+current.noun2;
+  el("printMeta").textContent="Session: "+current.code+"   ·   Date: "+new Date().toLocaleDateString()+"   ·   "+((current.responses||[]).length)+" student responses";
+  // Ensure poem + summary are visible in the DOM before printing
+  if(current.classPoem){ el("classPoem").textContent=current.classPoem; el("classPoem").classList.remove("hidden"); }
+  if(current.summary){   el("summary").textContent=current.summary;   el("summary").classList.remove("hidden"); }
+  window.print();
+}
+
+function status(id,msg,err=false){el(id).textContent=msg;el(id).classList.toggle("error",err)}
+function esc(s){return String(s||"").replace(/[&<>'"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[c]))}
+function js(s){return String(s||"").replace(/\\/g,"\\\\").replace(/'/g,"\\'")}
+function shorten(s,n){s=String(s||"").replace(/\s+/g," ").trim();return s.length>n?s.slice(0,n-3)+"...":s}
+init();
+</script>
+</body>
+</html>
