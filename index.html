@@ -242,7 +242,20 @@ function renderPairBank(){const cat=el("category").value||"Upper Elementary";con
 function usePair(a,b,c){current.noun1=a;current.noun2=b;current.category=c;renderTeacherPair()}
 function useCustomPair(){const a=el("custom1").value.trim(),b=el("custom2").value.trim(),c=el("customTheme").value.trim()||"custom"; if(!a||!b)return status("teacherStatus","Add both custom nouns."); usePair(a,b,c)}
 function renderTeacherPair(){el("teacherNoun1").textContent=current.noun1;el("teacherNoun2").textContent=current.noun2;el("teacherTheme").textContent=current.category;makeJoinLink()}
-async function startSession(){current.code=clean(el("teacherCode").value);current.prompt=el("teacherPrompt").value.trim(); const d=await api("/api/session/start",{method:"POST",body:JSON.stringify(current)}); current=d.session; status("teacherStatus","Session "+current.code+" is live."); renderAll(); makeJoinLink()}
+async function startSession(){
+  // Pause the auto-refresh timer so it doesn't overwrite while we save
+  if(timer){clearInterval(timer);timer=null;}
+  current.code=clean(el("teacherCode").value);
+  current.prompt=el("teacherPrompt").value.trim();
+  try{
+    const d=await api("/api/session/start",{method:"POST",body:JSON.stringify(current)});
+    current=d.session;
+    status("teacherStatus","Session "+current.code+" is live.");
+    renderAll(); makeJoinLink();
+  }catch(e){status("teacherStatus",e.message,true);}
+  // Restart timer after save is complete
+  startTimer();
+}
 async function joinSession(){const code=clean(el("studentCode").value); try{const d=await api("/api/session/"+code); current=d.session; renderStudentPair(); status("studentStatus","Joined "+code+". Write round 1.")}catch(e){status("studentStatus",e.message,true)}}
 function renderStudentPair(){el("studentNoun1").textContent=current.noun1;el("studentNoun2").textContent=current.noun2;el("studentMode").textContent=current.category||current.mode;el("studentPrompt").textContent=current.prompt;el("displayNoun1").textContent=current.noun1;el("displayNoun2").textContent=current.noun2;el("displayCode").textContent=current.code}
 function makeJoinLink(){const code=clean(el("teacherCode")?.value||current.code); const url=location.origin+location.pathname+"?code="+encodeURIComponent(code)+"&view=student"; el("joinLink").value=url; el("joinCode").textContent=code; if(window.QRCode) QRCode.toCanvas(el("qrCanvas"),url,{width:180,margin:1},err=>{if(err)qrFallback(url)}); else qrFallback(url)}
@@ -273,7 +286,7 @@ function quickRevise(style){el("revisionInstruction").value="Make the class poem
 function setDisplayMode(mode){current.displayMode=mode; api("/api/session/"+current.code+"/display",{method:"POST",body:JSON.stringify({displayMode:mode})}).catch(()=>{}); renderDisplay()}
 function toggleDisplayNames(){current.displayNames=!current.displayNames; api("/api/session/"+current.code+"/display",{method:"POST",body:JSON.stringify({displayNames:current.displayNames})}).catch(()=>{}); renderAll()}
 function renderDisplay(){if(!el("classDisplayView"))return; renderStudentPair(); const mode=current.displayMode||"gallery"; ["displayGallery","displaySpotlight","displayPoem","displaySummary"].forEach(id=>el(id).classList.add("hidden")); el("displayCount").textContent=(current.responses||[]).length+" ideas collected"; if(mode==="gallery"){el("displayGallery").classList.remove("hidden");el("displayGallery").innerHTML=(current.responses||[]).slice(-12).reverse().map((r,i)=>`<div class="display-card"><p>${esc(shorten(r.responseText,220))}</p><strong>${esc(displayName(r.name,i))}</strong></div>`).join("")||"<div class='display-card'><p>Waiting for ideas...</p></div>"} if(mode==="spotlight"){const list=current.responses||[]; el("displaySpotlight").classList.remove("hidden"); const r=list[spotlightIndex++%Math.max(list.length,1)]; el("displaySpotlight").innerHTML=r?`<div><p>${esc(shorten(r.responseText,260))}</p><strong>${esc(displayName(r.name,0))}</strong></div>`:"<p>Waiting for a spotlight idea...</p>"} if(mode==="poem"){el("displayPoem").classList.remove("hidden");el("displayPoem").textContent=current.classPoem||"Create the class poem from the teacher dashboard."} if(mode==="summary"){el("displaySummary").classList.remove("hidden");el("displaySummary").textContent=current.summary||"Create the AI summary from the teacher dashboard."}}
-function startTimer(){if(timer)return; timer=setInterval(()=>{if(!el("teacherView").classList.contains("hidden")||!el("classDisplayView").classList.contains("hidden"))loadResponses()},4000)}
+function startTimer(){if(timer)clearInterval(timer); timer=setInterval(()=>{if(!el("teacherView").classList.contains("hidden")||!el("classDisplayView").classList.contains("hidden"))loadResponses()},4000)}
 
 // ── Export as .txt ─────────────────────────────────────────────────────────────
 function exportReport(){
