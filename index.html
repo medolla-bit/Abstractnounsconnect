@@ -231,7 +231,7 @@ let timer=null, spotlightIndex=0;
 function el(id){return document.getElementById(id)}
 function clean(code){return String(code||"TODAY").trim().toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,16)||"TODAY"}
 function viewIds(){return ["studentView","soloView","teacherView","classDisplayView"]}
-function setView(view){viewIds().forEach(id=>el(id).classList.add("hidden")); el(view+"View")?.classList.remove("hidden"); ["student","solo","teacher","display"].forEach(v=>el(v+"Tab")?.classList.toggle("primary",v===view)); if(view==="display") renderDisplay(); if(view==="teacher") startTimer();}
+function setView(view){viewIds().forEach(id=>el(id).classList.add("hidden")); el(view+"View")?.classList.remove("hidden"); ["student","solo","teacher","display"].forEach(v=>el(v+"Tab")?.classList.toggle("primary",v===view)); if(view==="display"){loadDisplayResponses();startTimer();} if(view==="teacher") startTimer();}
 function teacherLogin(){const p=prompt("Teacher password:"); if(p===TEACHER_PASSWORD){setView("teacher"); loadResponses()} else if(p!==null) alert("Incorrect password")}
 async function api(path, opts={}){const r=await fetch(path,{headers:{"Content-Type":"application/json"},...opts}); const d=await r.json().catch(()=>({})); if(!r.ok) throw new Error(d.error||"Request failed"); return d}
 
@@ -286,7 +286,29 @@ function quickRevise(style){el("revisionInstruction").value="Make the class poem
 function setDisplayMode(mode){current.displayMode=mode; api("/api/session/"+current.code+"/display",{method:"POST",body:JSON.stringify({displayMode:mode})}).catch(()=>{}); renderDisplay()}
 function toggleDisplayNames(){current.displayNames=!current.displayNames; api("/api/session/"+current.code+"/display",{method:"POST",body:JSON.stringify({displayNames:current.displayNames})}).catch(()=>{}); renderAll()}
 function renderDisplay(){if(!el("classDisplayView"))return; renderStudentPair(); const mode=current.displayMode||"gallery"; ["displayGallery","displaySpotlight","displayPoem","displaySummary"].forEach(id=>el(id).classList.add("hidden")); el("displayCount").textContent=(current.responses||[]).length+" ideas collected"; if(mode==="gallery"){el("displayGallery").classList.remove("hidden");el("displayGallery").innerHTML=(current.responses||[]).slice(-12).reverse().map((r,i)=>`<div class="display-card"><p>${esc(shorten(r.responseText,220))}</p><strong>${esc(displayName(r.name,i))}</strong></div>`).join("")||"<div class='display-card'><p>Waiting for ideas...</p></div>"} if(mode==="spotlight"){const list=current.responses||[]; el("displaySpotlight").classList.remove("hidden"); const r=list[spotlightIndex++%Math.max(list.length,1)]; el("displaySpotlight").innerHTML=r?`<div><p>${esc(shorten(r.responseText,260))}</p><strong>${esc(displayName(r.name,0))}</strong></div>`:"<p>Waiting for a spotlight idea...</p>"} if(mode==="poem"){el("displayPoem").classList.remove("hidden");el("displayPoem").textContent=current.classPoem||"Create the class poem from the teacher dashboard."} if(mode==="summary"){el("displaySummary").classList.remove("hidden");el("displaySummary").textContent=current.summary||"Create the AI summary from the teacher dashboard."}}
-function startTimer(){if(timer)clearInterval(timer); timer=setInterval(()=>{if(!el("teacherView").classList.contains("hidden")||!el("classDisplayView").classList.contains("hidden"))loadResponses()},4000)}
+async function loadDisplayResponses(){
+  try{
+    const code=clean(el("teacherCode")?.value||current.code||"TODAY");
+    const d=await api("/api/session/"+code);
+    const s=d.session;
+    current.responses   = s.responses    ?? [];
+    current.classPoem   = s.classPoem    ?? "";
+    current.summary     = s.summary      ?? "";
+    current.noun1       = s.noun1        ?? current.noun1;
+    current.noun2       = s.noun2        ?? current.noun2;
+    current.category    = s.category     ?? current.category;
+    current.displayMode = s.displayMode  ?? current.displayMode;
+    current.displayNames= s.displayNames ?? current.displayNames;
+    renderDisplay();
+  }catch(e){console.log("display fetch error",e)}
+}
+function startTimer(){
+  if(timer)clearInterval(timer);
+  timer=setInterval(()=>{
+    if(!el("teacherView").classList.contains("hidden")) loadResponses();
+    else if(!el("classDisplayView").classList.contains("hidden")) loadDisplayResponses();
+  },4000);
+}
 
 // ── Export as .txt ─────────────────────────────────────────────────────────────
 function exportReport(){
